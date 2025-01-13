@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shortest Path Visualizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="background"></div>
+  <div class="container">
+    <h1>Shortest Path Visualizer</h1>
+    <div class="controls">
+      <button id="startBtn">Set Start</button>
+      <button id="endBtn">Set End</button>
+      <button id="obstacleBtn">Add Obstacles</button>
+      <button id="findPathBtn">Find Path</button>
+      <button id="resetBtn">Reset Grid</button>
+      <label for="speedSlider">Animation Speed:</label>
+      <input type="range" id="speedSlider" min="10" max="200" value="50">
+      <label for="algorithm">Algorithm:</label>
+      <select id="algorithm">
+        <option value="astar">A* Algorithm</option>
+        <option value="dijkstra">Dijkstra's Algorithm</option>
+        <option value="bfs">Breadth-First Search (BFS)</option>
+      </select>
+    </div>
+    <div id="grid"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
