@@ -108,6 +108,7 @@ async function findPath() {
   }
 
   const algorithm = document.getElementById('algorithm').value;
+  
   switch (algorithm) {
     case 'astar':
       await aStar();
