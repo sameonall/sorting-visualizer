@@ -1,18 +1,20 @@
-## Getting Started
+Sorting Algorithm Visualizer
+A web-based tool to visualize various sorting algorithms like Bubble Sort, Selection Sort, Insertion Sort, Merge Sort, Quick Sort, and Heap Sort.
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Features
+Interactive Array Generation: Generate random arrays of customizable size.
 
-## Folder Structure
+Real-Time Visualization: Watch the sorting process in real-time with animations.
 
-The workspace contains two folders by default, where:
+Multiple Algorithms: Choose from a variety of sorting algorithms.
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+Performance Metrics: Track comparisons, swaps, and execution time.
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+Custom Array Input: Input your own array to visualize sorting.
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+Pause and Resume: Pause the sorting process and resume at any time.
 
-## Dependency Management
+Reset: Reset the array and metrics to start over.
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+Live Demo
+[View the live demo here](https://sameonall.github.io/sorting-visualizer)
