@@ -1,342 +1,379 @@
-const ROWS = 20;
-const COLS = 20;
-let grid = [];
-let start = null;
-let end = null;
-let isSettingStart = false;
-let isSettingEnd = false;
-let isSettingObstacles = false;
-let isDragging = false;
-let animationSpeed = 50; // Default animation speed
+const arrayContainer = document.getElementById("arrayContainer");
+const generateArrayButton = document.getElementById("generateArray");
+const sizeSlider = document.getElementById("sizeSlider");
+const sizeInput = document.getElementById("sizeInput"); // Add this line
+const speedSlider = document.getElementById("speedSlider");
+const algorithmSelect = document.getElementById("algorithm");
+const sortButton = document.getElementById("sort");
+const resetButton = document.getElementById("reset");
+const stepButton = document.getElementById("step");
+const customArrayInput = document.getElementById("customArray");
+const useCustomArrayButton = document.getElementById("useCustomArray");
+const algorithmDescription = document.getElementById("algorithmDescription");
+const comparisonsDisplay = document.getElementById("comparisons");
+const swapsDisplay = document.getElementById("swaps");
+const timeDisplay = document.getElementById("time"); // Add this line
 
-// Initialize the grid
-function initializeGrid() {
-  const gridElement = document.getElementById('grid');
-  gridElement.style.gridTemplateColumns = `repeat(${COLS}, 25px)`;
-  gridElement.innerHTML = '';
+let array = [];
+let arraySize = sizeSlider.value;
+let delay = 100 - speedSlider.value;
+let isSorting = false;
+let comparisons = 0;
+let swaps = 0;
+let startTime; // Add this line
 
-  for (let row = 0; row < ROWS; row++) {
-    const currentRow = [];
-    for (let col = 0; col < COLS; col++) {
-      const cell = document.createElement('div');
-      cell.classList.add('cell');
-      cell.dataset.row = row;
-      cell.dataset.col = col;
-      cell.addEventListener('mousedown', () => handleCellClick(row, col));
-      cell.addEventListener('mouseover', () => handleCellHover(row, col));
-      cell.addEventListener('dblclick', () => handleCellDoubleClick(row, col));
-      gridElement.appendChild(cell);
-      currentRow.push(cell);
-    }
-    grid.push(currentRow);
+// Algorithm descriptions
+const algorithmDescriptions = {
+  bubbleSort: "Bubble Sort repeatedly swaps adjacent elements if they are in the wrong order.",
+  selectionSort: "Selection Sort selects the smallest element and swaps it with the first unsorted element.",
+  insertionSort: "Insertion Sort builds the final sorted array one element at a time.",
+  mergeSort: "Merge Sort divides the array into halves, sorts them, and merges them.",
+  quickSort: "Quick Sort picks a pivot and partitions the array around the pivot.",
+  heapSort: "Heap Sort builds a heap and repeatedly extracts the maximum element.",
+};
+
+// Generate a random array
+function generateArray() {
+  array = [];
+  for (let i = 0; i < arraySize; i++) {
+    array.push(Math.floor(Math.random() * 100) + 1);
   }
+  renderArray();
 }
 
-// Handle cell click (for setting start/end)
-function handleCellClick(row, col) {
-  const cell = grid[row][col];
-  if (isSettingStart) {
-    if (start) start.classList.remove('start');
-    start = cell;
-    cell.classList.add('start');
-    isSettingStart = false;
-  } else if (isSettingEnd) {
-    if (end) end.classList.remove('end');
-    end = cell;
-    cell.classList.add('end');
-    isSettingEnd = false;
-  } else if (isSettingObstacles) {
-    isDragging = true;
-    cell.classList.toggle('obstacle');
-  }
-}
+// Theme Toggle
+const themeToggle = document.getElementById("themeToggle");
+const gradientTheme = document.getElementById("gradientTheme");
+const neonTheme = document.getElementById("neonTheme");
 
-// Handle cell hover (for drawing obstacles)
-function handleCellHover(row, col) {
-  if (isDragging && isSettingObstacles && !grid[row][col].classList.contains('start') && !grid[row][col].classList.contains('end')) {
-    grid[row][col].classList.toggle('obstacle', true);
-  }
-}
-
-// Handle cell double-click (for toggling obstacles)
-function handleCellDoubleClick(row, col) {
-  if (isSettingObstacles && !grid[row][col].classList.contains('start') && !grid[row][col].classList.contains('end')) {
-    grid[row][col].classList.toggle('obstacle');
-  }
-}
-
-// Event listeners for buttons
-document.getElementById('startBtn').addEventListener('click', () => {
-  isSettingStart = true;
-  isSettingEnd = false;
-  isSettingObstacles = false;
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  document.querySelector("header").classList.toggle("dark-mode");
+  document.querySelector("footer").classList.toggle("dark-mode");
+  themeToggle.innerHTML = document.body.classList.contains("dark-mode")
+    ? '<i class="fas fa-sun"></i>'
+    : '<i class="fas fa-moon"></i>';
 });
 
-document.getElementById('endBtn').addEventListener('click', () => {
-  isSettingEnd = true;
-  isSettingStart = false;
-  isSettingObstacles = false;
+gradientTheme.addEventListener("click", () => {
+  if (document.body.classList.contains("gradient-mode")) {
+    // If gradient mode is already active, remove it to revert to default
+    document.body.classList.remove("gradient-mode");
+    document.querySelector("header").classList.remove("gradient-mode");
+    document.querySelector("footer").classList.remove("gradient-mode");
+  } else {
+    // Otherwise, apply gradient mode and remove other themes
+    document.body.classList.remove("dark-mode", "neon-mode");
+    document.body.classList.add("gradient-mode");
+    document.querySelector("header").classList.remove("dark-mode", "neon-mode");
+    document.querySelector("header").classList.add("gradient-mode");
+    document.querySelector("footer").classList.remove("dark-mode", "neon-mode");
+    document.querySelector("footer").classList.add("gradient-mode");
+  }
 });
 
-document.getElementById('obstacleBtn').addEventListener('click', () => {
-  isSettingObstacles = true;
-  isSettingStart = false;
-  isSettingEnd = false;
+neonTheme.addEventListener("click", () => {
+  if (document.body.classList.contains("neon-mode")) {
+    // If neon mode is already active, remove it to revert to default
+    document.body.classList.remove("neon-mode");
+    document.querySelector("header").classList.remove("neon-mode");
+    document.querySelector("footer").classList.remove("neon-mode");
+  } else {
+    // Otherwise, apply neon mode and remove other themes
+    document.body.classList.remove("dark-mode", "gradient-mode");
+    document.body.classList.add("neon-mode");
+    document.querySelector("header").classList.remove("dark-mode", "gradient-mode");
+    document.querySelector("header").classList.add("neon-mode");
+    document.querySelector("footer").classList.remove("dark-mode", "gradient-mode");
+    document.querySelector("footer").classList.add("neon-mode");
+  }
 });
 
-document.getElementById('findPathBtn').addEventListener('click', findPath);
-document.getElementById('resetBtn').addEventListener('click', resetGrid);
-
-// Slider to control animation speed
-document.getElementById('speedSlider').addEventListener('input', (e) => {
-  animationSpeed = 210 - e.target.value; // Invert speed for intuitive slider
+// Tutorial Buttons
+const tutorialButtons = document.querySelectorAll(".tutorialButton");
+tutorialButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const algorithm = button.getAttribute("data-algorithm");
+    algorithmSelect.value = algorithm;
+    algorithmDescription.textContent = algorithmDescriptions[algorithm];
+  });
 });
 
-// Reset the grid
-function resetGrid() {
-  grid = [];
-  start = null;
-  end = null;
-  initializeGrid();
-}
-
-// Find path based on selected algorithm
-async function findPath() {
-  if (!start || !end) {
-    alert('Please set start and end points.');
-    return;
-  }
-
-  const algorithm = document.getElementById('algorithm').value;
-  
-  switch (algorithm) {
-    case 'astar':
-      await aStar();
-      break;
-    case 'dijkstra':
-      await dijkstra();
-      break;
-    case 'bfs':
-      await bfs();
-      break;
-    default:
-      alert('Invalid algorithm selected.');
+// Render the array as bars
+function renderArray(highlightIndices = [], swapIndices = [], sortedIndices = []) {
+  arrayContainer.innerHTML = "";
+  for (let i = 0; i < array.length; i++) {
+    const bar = document.createElement("div");
+    bar.className = "arrayBar";
+    bar.style.height = `${array[i]}%`;
+    if (highlightIndices.includes(i)) {
+      bar.classList.add("comparing");
+    }
+    if (swapIndices.includes(i)) {
+      bar.classList.add("swapping");
+    }
+    if (sortedIndices.includes(i)) {
+      bar.classList.add("sorted");
+    }
+    arrayContainer.appendChild(bar);
   }
 }
 
-// A* Algorithm
-async function aStar() {
-  const startRow = parseInt(start.dataset.row);
-  const startCol = parseInt(start.dataset.col);
-  const endRow = parseInt(end.dataset.row);
-  const endCol = parseInt(end.dataset.col);
+// Swap two elements in the array
+const swapSound = new Audio("swap.wav");
+const compareSound = new Audio("compare.wav");
 
-  const openSet = [];
-  const closedSet = new Set();
-
-  const startNode = {
-    row: startRow,
-    col: startCol,
-    g: 0,
-    h: heuristic(startRow, startCol, endRow, endCol),
-    parent: null,
-  };
-  startNode.f = startNode.g + startNode.h;
-  openSet.push(startNode);
-
-  while (openSet.length > 0) {
-    openSet.sort((a, b) => a.f - b.f);
-    const current = openSet.shift();
-
-    if (current.row === endRow && current.col === endCol) {
-      await reconstructPath(current);
-      return;
-    }
-
-    closedSet.add(`${current.row},${current.col}`);
-
-    const neighbors = getNeighbors(current.row, current.col);
-    for (const neighbor of neighbors) {
-      const [row, col] = neighbor;
-      if (closedSet.has(`${row},${col}`) || grid[row][col].classList.contains('obstacle')) {
-        continue;
-      }
-
-      const gScore = current.g + 1;
-      const hScore = heuristic(row, col, endRow, endCol);
-      const fScore = gScore + hScore;
-
-      const existingNode = openSet.find((node) => node.row === row && node.col === col);
-      if (!existingNode || gScore < existingNode.g) {
-        const newNode = {
-          row,
-          col,
-          g: gScore,
-          h: hScore,
-          f: fScore,
-          parent: current,
-        };
-        if (!existingNode) openSet.push(newNode);
-        else Object.assign(existingNode, newNode);
-      }
-    }
-
-    if (current !== startNode) {
-      grid[current.row][current.col].classList.add('visited');
-      await sleep(animationSpeed);
-    }
-  }
-
-  alert('No path found!');
+async function swap(i, j) {
+  [array[i], array[j]] = [array[j], array[i]];
+  swaps++;
+  swapsDisplay.textContent = swaps;
+  renderArray([], [i, j]);
+  swapSound.play();
+  await sleep(delay);
 }
 
-// Dijkstra's Algorithm
-async function dijkstra() {
-  const startRow = parseInt(start.dataset.row);
-  const startCol = parseInt(start.dataset.col);
-  const endRow = parseInt(end.dataset.row);
-  const endCol = parseInt(end.dataset.col);
-
-  const distances = Array.from({ length: ROWS }, () => Array(COLS).fill(Infinity));
-  const previous = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-  const visited = new Set();
-
-  distances[startRow][startCol] = 0;
-  const queue = [{ row: startRow, col: startCol, distance: 0 }];
-
-  while (queue.length > 0) {
-    queue.sort((a, b) => a.distance - b.distance);
-    const current = queue.shift();
-
-    if (current.row === endRow && current.col === endCol) {
-      await reconstructPath(previous[endRow][endCol]);
-      return;
-    }
-
-    visited.add(`${current.row},${current.col}`);
-
-    const neighbors = getNeighbors(current.row, current.col);
-    for (const neighbor of neighbors) {
-      const [row, col] = neighbor;
-      if (visited.has(`${row},${col}`) || grid[row][col].classList.contains('obstacle')) {
-        continue;
-      }
-
-      const newDistance = current.distance + 1;
-      if (newDistance < distances[row][col]) {
-        distances[row][col] = newDistance;
-        previous[row][col] = current;
-        queue.push({ row, col, distance: newDistance });
-      }
-    }
-
-    if (current.row !== startRow || current.col !== startCol) {
-      grid[current.row][current.col].classList.add('visited');
-      await sleep(animationSpeed);
-    }
-  }
-
-  alert('No path found!');
-}
-
-// Breadth-First Search (BFS)
-async function bfs() {
-  const startRow = parseInt(start.dataset.row);
-  const startCol = parseInt(start.dataset.col);
-  const endRow = parseInt(end.dataset.row);
-  const endCol = parseInt(end.dataset.col);
-
-  const queue = [{ row: startRow, col: startCol, parent: null }];
-  const visited = new Set();
-  visited.add(`${startRow},${startCol}`);
-
-  while (queue.length > 0) {
-    const current = queue.shift();
-
-    if (current.row === endRow && current.col === endCol) {
-      await reconstructPath(current);
-      return;
-    }
-
-    const neighbors = getNeighbors(current.row, current.col);
-    for (const neighbor of neighbors) {
-      const [row, col] = neighbor;
-      if (visited.has(`${row},${col}`) || grid[row][col].classList.contains('obstacle')) {
-        continue;
-      }
-
-      visited.add(`${row},${col}`);
-      queue.push({ row, col, parent: current });
-    }
-
-    if (current.row !== startRow || current.col !== startCol) {
-      grid[current.row][current.col].classList.add('visited');
-      await sleep(animationSpeed);
-    }
-  }
-
-  alert('No path found!');
-}
-
-// Heuristic function (Manhattan distance)
-function heuristic(row1, col1, row2, col2) {
-  return Math.abs(row1 - row2) + Math.abs(col1 - col2);
-}
-
-// Get valid neighbors
-function getNeighbors(row, col) {
-  const neighbors = [];
-  if (row > 0) neighbors.push([row - 1, col]);
-  if (row < ROWS - 1) neighbors.push([row + 1, col]);
-  if (col > 0) neighbors.push([row, col - 1]);
-  if (col < COLS - 1) neighbors.push([row, col + 1]);
-  return neighbors;
-}
-
-// Reconstruct and animate the path
-async function reconstructPath(node) {
-  const path = [];
-  while (node.parent) {
-    path.push(node);
-    node = node.parent;
-  }
-  path.reverse();
-
-  // Clear visited nodes to show only the shortest path
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      if (grid[row][col].classList.contains('visited')) {
-        grid[row][col].classList.remove('visited');
-      }
-    }
-  }
-
-  // Animate the shortest path sequentially
-  for (let i = 0; i < path.length; i++) {
-    const p = path[i];
-    if (grid[p.row][p.col] !== start && grid[p.row][p.col] !== end) {
-      grid[p.row][p.col].classList.add('path');
-      await sleep(animationSpeed);
-    }
-  }
-
-  // Add a final glowing effect to the path
-  for (const p of path) {
-    if (grid[p.row][p.col] !== start && grid[p.row][p.col] !== end) {
-      grid[p.row][p.col].style.animation = 'glow 1s infinite alternate, move 0.5s ease';
-    }
-  }
-}
-
-// Sleep function for animation delay
+// Sleep function for visualization
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Initialize the grid on page load
-initializeGrid();
+// Bubble Sort
+async function bubbleSort() {
+  for (let i = 0; i < array.length - 1; i++) {
+    for (let j = 0; j < array.length - i - 1; j++) {
+      comparisons++;
+      comparisonsDisplay.textContent = comparisons;
+      renderArray([j, j + 1]);
+      compareSound.play();
+      await sleep(delay);
+      if (array[j] > array[j + 1]) {
+        await swap(j, j + 1);
+      }
+    }
+    renderArray([], [], [array.length - i - 1]);
+  }
+  renderArray([], [], Array.from({ length: array.length }, (_, i) => i));
+}
 
-// Handle mouseup to stop dragging
-document.addEventListener('mouseup', () => {
-  isDragging = false;
+// Selection Sort
+async function selectionSort() {
+  for (let i = 0; i < array.length - 1; i++) {
+    let minIndex = i;
+    for (let j = i + 1; j < array.length; j++) {
+      comparisons++;
+      comparisonsDisplay.textContent = comparisons;
+      renderArray([j, minIndex]);
+      compareSound.play();
+      await sleep(delay);
+      if (array[j] < array[minIndex]) {
+        minIndex = j;
+      }
+    }
+    if (minIndex !== i) {
+      await swap(i, minIndex);
+    }
+    renderArray([], [], [i]);
+  }
+  renderArray([], [], Array.from({ length: array.length }, (_, i) => i));
+}
+
+// Insertion Sort
+async function insertionSort() {
+  for (let i = 1; i < array.length; i++) {
+    let key = array[i];
+    let j = i - 1;
+    while (j >= 0 && array[j] > key) {
+      comparisons++;
+      comparisonsDisplay.textContent = comparisons;
+      renderArray([j, j + 1]);
+      compareSound.play();
+      await sleep(delay);
+      array[j + 1] = array[j];
+      j--;
+    }
+    array[j + 1] = key;
+    renderArray([], [], [j + 1]);
+    await sleep(delay);
+  }
+  renderArray([], [], Array.from({ length: array.length }, (_, i) => i));
+}
+
+// Merge Sort
+async function mergeSort() {
+  await mergeSortHelper(0, array.length - 1);
+  renderArray([], [], Array.from({ length: array.length }, (_, i) => i));
+}
+
+async function mergeSortHelper(low, high) {
+  if (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    await mergeSortHelper(low, mid);
+    await mergeSortHelper(mid + 1, high);
+    await merge(low, mid, high);
+  }
+}
+
+async function merge(low, mid, high) {
+  const temp = [];
+  let i = low,
+    j = mid + 1;
+  while (i <= mid && j <= high) {
+    comparisons++;
+    comparisonsDisplay.textContent = comparisons;
+    renderArray([i, j]);
+    compareSound.play();
+    await sleep(delay);
+    if (array[i] <= array[j]) {
+      temp.push(array[i++]);
+    } else {
+      temp.push(array[j++]);
+    }
+  }
+  while (i <= mid) temp.push(array[i++]);
+  while (j <= high) temp.push(array[j++]);
+  for (let k = low; k <= high; k++) {
+    array[k] = temp[k - low];
+    renderArray([], [], [k]);
+    await sleep(delay);
+  }
+}
+
+// Quick Sort
+async function quickSort() {
+  await quickSortHelper(0, array.length - 1);
+  renderArray([], [], Array.from({ length: array.length }, (_, i) => i));
+}
+
+async function quickSortHelper(low, high) {
+  if (low < high) {
+    const pivotIndex = await partition(low, high);
+    await quickSortHelper(low, pivotIndex - 1);
+    await quickSortHelper(pivotIndex + 1, high);
+  }
+}
+
+async function partition(low, high) {
+  const pivot = array[high];
+  let i = low - 1;
+  for (let j = low; j < high; j++) {
+    comparisons++;
+    comparisonsDisplay.textContent = comparisons;
+    renderArray([j, high]);
+    compareSound.play();
+    await sleep(delay);
+    if (array[j] < pivot) {
+      i++;
+      await swap(i, j);
+    }
+  }
+  await swap(i + 1, high);
+  return i + 1;
+}
+
+// Heap Sort
+async function heapSort() {
+  const n = array.length;
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+    await heapify(n, i);
+  }
+  for (let i = n - 1; i > 0; i--) {
+    await swap(0, i);
+    await heapify(i, 0);
+  }
+  renderArray([], [], Array.from({ length: array.length }, (_, i) => i));
+}
+
+async function heapify(n, i) {
+  let largest = i;
+  const left = 2 * i + 1;
+  const right = 2 * i + 2;
+  if (left < n && array[left] > array[largest]) {
+    largest = left;
+  }
+  if (right < n && array[right] > array[largest]) {
+    largest = right;
+  }
+  if (largest !== i) {
+    await swap(i, largest);
+    await heapify(n, largest);
+  }
+}
+
+// Event Listeners
+generateArrayButton.addEventListener("click", generateArray);
+sizeSlider.addEventListener("input", () => {
+  arraySize = sizeSlider.value;
+  sizeInput.value = arraySize; // Sync the input with the slider
+  generateArray();
 });
+sizeInput.addEventListener("input", () => {
+  arraySize = sizeInput.value;
+  sizeSlider.value = arraySize; // Sync the slider with the input
+  generateArray();
+});
+speedSlider.addEventListener("input", () => {
+  delay = 100 - speedSlider.value;
+});
+algorithmSelect.addEventListener("change", () => {
+  algorithmDescription.textContent = algorithmDescriptions[algorithmSelect.value];
+});
+sortButton.addEventListener("click", async () => {
+  if (isSorting) return;
+  isSorting = true;
+  comparisons = 0;
+  swaps = 0;
+  timeDisplay.textContent = 0;
+  comparisonsDisplay.textContent = comparisons;
+  swapsDisplay.textContent = swaps;
+  startTime = performance.now(); // Track start time
+  const algorithm = algorithmSelect.value;
+  switch (algorithm) {
+    case "bubbleSort":
+      await bubbleSort();
+      break;
+    case "selectionSort":
+      await selectionSort();
+      break;
+    case "insertionSort":
+      await insertionSort();
+      break;
+    case "mergeSort":
+      await mergeSort();
+      break;
+    case "quickSort":
+      await quickSort();
+      break;
+    case "heapSort":
+      await heapSort();
+      break;
+    default:
+      alert("Invalid algorithm selected.");
+  }
+  const endTime = performance.now();
+  timeDisplay.textContent = Math.floor(endTime - startTime); // Calculate and display time
+  isSorting = false;
+});
+resetButton.addEventListener("click", () => {
+  if (isSorting) return;
+  generateArray();
+});
+useCustomArrayButton.addEventListener("click", () => {
+  if (isSorting) return;
+  const customArray = customArrayInput.value
+    .split(",")
+    .map((num) => parseInt(num.trim()))
+    .filter((num) => !isNaN(num));
+  if (customArray.length >= 5 && customArray.length <= 100) {
+    array = customArray;
+    arraySize = array.length;
+    sizeSlider.value = arraySize;
+    sizeInput.value = arraySize;
+    renderArray();
+  } else {
+    alert("Custom array must have between 5 and 100 elements.");
+  }
+});
+
+// Initialize
+generateArray();
+algorithmDescription.textContent = algorithmDescriptions[algorithmSelect.value];
