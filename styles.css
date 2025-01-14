@@ -1,23 +1,25 @@
 /* General Styles */
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Georgia', 'Times New Roman', serif; /* Classic serif fonts */
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
-  color: #333;
+  background-image: url('im1.jpg');
+  background-color: #f3f4f2;
+  color: #0b0a0a;
   transition: background-color 0.5s ease, color 0.5s ease;
+  line-height: 1.6; /* Improved readability */
 }
 
 /* Dark Mode */
 body.dark-mode {
-  background-color: #1a1a1a;
-  color: #e0e0e0;
+  background-color: #3fa81f5d;
+  color: #040404;
 }
 
 /* Gradient Mode */
 body.gradient-mode {
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
+  background: linear-gradient(135deg, #eaecec, #15b6be);
+  color: rgba(0, 0, 0, 0.438);
 }
 
 /* Neon Mode */
@@ -28,8 +30,8 @@ body.neon-mode {
 }
 
 @keyframes neonGlow {
-  0% { box-shadow: 0 0 10px #0ff, 0 0 20px #0ff; }
-  100% { box-shadow: 0 0 20px #0ff, 0 0 40px #0ff; }
+  0% { box-shadow: 0 0 10px #0ff, 0 0 20px rgb(154, 236, 236); }
+  100% { box-shadow: 0 0 20px #0ff, 0 0 40px #ffeb3b; }
 }
 
 /* Header */
@@ -111,8 +113,9 @@ main {
 
 h2 {
   margin-bottom: 20px;
-  font-size: 2rem;
+  font-size: 2.5rem; /* Larger heading for emphasis */
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: bold; /* Bold for classical emphasis */
 }
 
 /* Controls */
@@ -180,7 +183,7 @@ button:hover {
 /* Algorithm Description */
 #algorithmDescription {
   margin: 20px;
-  font-size: 18px;
+  font-size: 1.1rem; /* Slightly larger for readability */
   background: rgba(255, 255, 255, 0.1);
   padding: 15px;
   border-radius: 10px;
@@ -191,7 +194,7 @@ button:hover {
 /* Performance Metrics */
 #performanceMetrics {
   margin: 20px;
-  font-size: 18px;
+  font-size: 1.1rem; /* Consistent with description */
   background: rgba(255, 255, 255, 0.1);
   padding: 15px;
   border-radius: 10px;
@@ -237,4 +240,28 @@ footer {
   color: #ffeb3b;
   transform: scale(1.2);
   text-shadow: 0 0 10px #ffeb3b;
+}
+/* Wooden Theme */
+body.wooden-mode {
+  background-image: url('im2.jpg'); /* Unsplash wood texture */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #3e2723; /* Dark brown text for contrast */
+}
+
+body.wooden-mode header,
+body.wooden-mode footer {
+  background-image: url('im2.jpg');
+  background: rgba(94, 75, 50, 0.8); /* Semi-transparent wood-like color */
+  backdrop-filter: blur(10px);
+  color: #fff; /* Light text for contrast */
+}
+
+body.wooden-mode main {
+  background-image: url('im1.jpg');
+  background: rgba(255, 255, 255, 0.1); /* Semi-transparent white */
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

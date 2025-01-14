@@ -1,10 +1,10 @@
 const arrayContainer = document.getElementById("arrayContainer");
 const generateArrayButton = document.getElementById("generateArray");
 const sizeSlider = document.getElementById("sizeSlider");
-const sizeInput = document.getElementById("sizeInput"); // Add this line
 const speedSlider = document.getElementById("speedSlider");
 const algorithmSelect = document.getElementById("algorithm");
 const sortButton = document.getElementById("sort");
+const pauseButton = document.getElementById("pause");
 const resetButton = document.getElementById("reset");
 const stepButton = document.getElementById("step");
 const customArrayInput = document.getElementById("customArray");
@@ -12,15 +12,16 @@ const useCustomArrayButton = document.getElementById("useCustomArray");
 const algorithmDescription = document.getElementById("algorithmDescription");
 const comparisonsDisplay = document.getElementById("comparisons");
 const swapsDisplay = document.getElementById("swaps");
-const timeDisplay = document.getElementById("time"); // Add this line
+const timeDisplay = document.getElementById("time");
 
 let array = [];
 let arraySize = sizeSlider.value;
 let delay = 100 - speedSlider.value;
 let isSorting = false;
+let isPaused = false;
 let comparisons = 0;
 let swaps = 0;
-let startTime; // Add this line
+let startTime;
 
 // Algorithm descriptions
 const algorithmDescriptions = {
@@ -40,11 +41,11 @@ function generateArray() {
   }
   renderArray();
 }
-
 // Theme Toggle
 const themeToggle = document.getElementById("themeToggle");
 const gradientTheme = document.getElementById("gradientTheme");
 const neonTheme = document.getElementById("neonTheme");
+const woodenTheme = document.getElementById("woodenTheme"); // New wooden theme button
 
 themeToggle.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
@@ -63,11 +64,11 @@ gradientTheme.addEventListener("click", () => {
     document.querySelector("footer").classList.remove("gradient-mode");
   } else {
     // Otherwise, apply gradient mode and remove other themes
-    document.body.classList.remove("dark-mode", "neon-mode");
+    document.body.classList.remove("dark-mode", "neon-mode", "wooden-mode");
     document.body.classList.add("gradient-mode");
-    document.querySelector("header").classList.remove("dark-mode", "neon-mode");
+    document.querySelector("header").classList.remove("dark-mode", "neon-mode", "wooden-mode");
     document.querySelector("header").classList.add("gradient-mode");
-    document.querySelector("footer").classList.remove("dark-mode", "neon-mode");
+    document.querySelector("footer").classList.remove("dark-mode", "neon-mode", "wooden-mode");
     document.querySelector("footer").classList.add("gradient-mode");
   }
 });
@@ -80,23 +81,31 @@ neonTheme.addEventListener("click", () => {
     document.querySelector("footer").classList.remove("neon-mode");
   } else {
     // Otherwise, apply neon mode and remove other themes
-    document.body.classList.remove("dark-mode", "gradient-mode");
+    document.body.classList.remove("dark-mode", "gradient-mode", "wooden-mode");
     document.body.classList.add("neon-mode");
-    document.querySelector("header").classList.remove("dark-mode", "gradient-mode");
+    document.querySelector("header").classList.remove("dark-mode", "gradient-mode", "wooden-mode");
     document.querySelector("header").classList.add("neon-mode");
-    document.querySelector("footer").classList.remove("dark-mode", "gradient-mode");
+    document.querySelector("footer").classList.remove("dark-mode", "gradient-mode", "wooden-mode");
     document.querySelector("footer").classList.add("neon-mode");
   }
 });
 
-// Tutorial Buttons
-const tutorialButtons = document.querySelectorAll(".tutorialButton");
-tutorialButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const algorithm = button.getAttribute("data-algorithm");
-    algorithmSelect.value = algorithm;
-    algorithmDescription.textContent = algorithmDescriptions[algorithm];
-  });
+// Wooden Theme Toggle
+woodenTheme.addEventListener("click", () => {
+  if (document.body.classList.contains("wooden-mode")) {
+    // If wooden mode is already active, remove it to revert to default
+    document.body.classList.remove("wooden-mode");
+    document.querySelector("header").classList.remove("wooden-mode");
+    document.querySelector("footer").classList.remove("wooden-mode");
+  } else {
+    // Otherwise, apply wooden mode and remove other themes
+    document.body.classList.remove("dark-mode", "gradient-mode", "neon-mode");
+    document.body.classList.add("wooden-mode");
+    document.querySelector("header").classList.remove("dark-mode", "gradient-mode", "neon-mode");
+    document.querySelector("header").classList.add("wooden-mode");
+    document.querySelector("footer").classList.remove("dark-mode", "gradient-mode", "neon-mode");
+    document.querySelector("footer").classList.add("wooden-mode");
+  }
 });
 
 // Render the array as bars
@@ -137,10 +146,43 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Pause functionality
+function pause() {
+  return new Promise((resolve) => {
+    const resumeButton = document.getElementById("pause");
+    resumeButton.textContent = "Resume";
+
+    // Create a one-time event listener for the "Resume" button
+    const resumeHandler = () => {
+      isPaused = false;
+      resumeButton.textContent = "Pause";
+      resolve();
+      resumeButton.removeEventListener("click", resumeHandler); // Remove the listener after resolving
+    };
+
+    resumeButton.addEventListener("click", resumeHandler);
+  });
+}
+
+// Reset functionality
+function reset() {
+  isSorting = false;
+  isPaused = false;
+  comparisons = 0;
+  swaps = 0;
+  comparisonsDisplay.textContent = comparisons;
+  swapsDisplay.textContent = swaps;
+  timeDisplay.textContent = 0;
+  generateArray();
+}
+
 // Bubble Sort
 async function bubbleSort() {
   for (let i = 0; i < array.length - 1; i++) {
     for (let j = 0; j < array.length - i - 1; j++) {
+      if (isPaused) {
+        await pause(); // Pause if the sorting is paused
+      }
       comparisons++;
       comparisonsDisplay.textContent = comparisons;
       renderArray([j, j + 1]);
@@ -160,6 +202,9 @@ async function selectionSort() {
   for (let i = 0; i < array.length - 1; i++) {
     let minIndex = i;
     for (let j = i + 1; j < array.length; j++) {
+      if (isPaused) {
+        await pause();
+      }
       comparisons++;
       comparisonsDisplay.textContent = comparisons;
       renderArray([j, minIndex]);
@@ -183,6 +228,9 @@ async function insertionSort() {
     let key = array[i];
     let j = i - 1;
     while (j >= 0 && array[j] > key) {
+      if (isPaused) {
+        await pause();
+      }
       comparisons++;
       comparisonsDisplay.textContent = comparisons;
       renderArray([j, j + 1]);
@@ -218,6 +266,9 @@ async function merge(low, mid, high) {
   let i = low,
     j = mid + 1;
   while (i <= mid && j <= high) {
+    if (isPaused) {
+      await pause();
+    }
     comparisons++;
     comparisonsDisplay.textContent = comparisons;
     renderArray([i, j]);
@@ -256,6 +307,9 @@ async function partition(low, high) {
   const pivot = array[high];
   let i = low - 1;
   for (let j = low; j < high; j++) {
+    if (isPaused) {
+      await pause();
+    }
     comparisons++;
     comparisonsDisplay.textContent = comparisons;
     renderArray([j, high]);
@@ -303,12 +357,6 @@ async function heapify(n, i) {
 generateArrayButton.addEventListener("click", generateArray);
 sizeSlider.addEventListener("input", () => {
   arraySize = sizeSlider.value;
-  sizeInput.value = arraySize; // Sync the input with the slider
-  generateArray();
-});
-sizeInput.addEventListener("input", () => {
-  arraySize = sizeInput.value;
-  sizeSlider.value = arraySize; // Sync the slider with the input
   generateArray();
 });
 speedSlider.addEventListener("input", () => {
@@ -318,14 +366,14 @@ algorithmSelect.addEventListener("change", () => {
   algorithmDescription.textContent = algorithmDescriptions[algorithmSelect.value];
 });
 sortButton.addEventListener("click", async () => {
-  if (isSorting) return;
+  if (isSorting) return; // Prevent multiple clicks
   isSorting = true;
   comparisons = 0;
   swaps = 0;
   timeDisplay.textContent = 0;
   comparisonsDisplay.textContent = comparisons;
   swapsDisplay.textContent = swaps;
-  startTime = performance.now(); // Track start time
+  startTime = performance.now();
   const algorithm = algorithmSelect.value;
   switch (algorithm) {
     case "bubbleSort":
@@ -350,12 +398,17 @@ sortButton.addEventListener("click", async () => {
       alert("Invalid algorithm selected.");
   }
   const endTime = performance.now();
-  timeDisplay.textContent = Math.floor(endTime - startTime); // Calculate and display time
-  isSorting = false;
+  timeDisplay.textContent = Math.floor(endTime - startTime);
+  isSorting = false; // Reset sorting flag
+});
+pauseButton.addEventListener("click", () => {
+  if (isSorting) {
+    isPaused = !isPaused;
+    pauseButton.textContent = isPaused ? "Resume" : "Pause";
+  }
 });
 resetButton.addEventListener("click", () => {
-  if (isSorting) return;
-  generateArray();
+  reset();
 });
 useCustomArrayButton.addEventListener("click", () => {
   if (isSorting) return;
@@ -367,7 +420,6 @@ useCustomArrayButton.addEventListener("click", () => {
     array = customArray;
     arraySize = array.length;
     sizeSlider.value = arraySize;
-    sizeInput.value = arraySize;
     renderArray();
   } else {
     alert("Custom array must have between 5 and 100 elements.");
